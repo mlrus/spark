@@ -28,7 +28,19 @@ import sbtunidoc.Plugin.UnidocKeys.unidocGenjavadocVersion
 import com.typesafe.sbt.pom.{loadEffectivePom, PomBuild, SbtPomKeys}
 import net.virtualvoid.sbt.graph.Plugin.graphSettings
 
+<<<<<<< HEAD
 object BuildCommons {
+=======
+object SparkBuild extends Build {
+  // Hadoop version to build against. For example, "0.20.2", "0.20.205.0", or
+  // "1.0.1" for Apache releases, or "0.20.2-cdh3u3" for Cloudera Hadoop.
+  val HADOOP_VERSION = "0.20.205.0"
+  val HADOOP_MAJOR_VERSION = "1"
+
+  // For Hadoop 2 versions such as "2.0.0-mr1-cdh4.1.1", set the HADOOP_MAJOR_VERSION to "2"
+  //val HADOOP_VERSION = "2.0.0-mr1-cdh4.1.1"
+  //val HADOOP_MAJOR_VERSION = "2"
+>>>>>>> FETCH_HEAD
 
   private val buildLocation = file(".").getAbsoluteFile.getParentFile
 
@@ -54,7 +66,19 @@ object BuildCommons {
   val sparkHome = buildLocation
 }
 
+<<<<<<< HEAD
 object SparkBuild extends PomBuild {
+=======
+  def sharedSettings = Defaults.defaultSettings ++ Seq(
+    organization := "org.spark-project",
+    version := "0.5.3-SNAPSHOT",
+    scalaVersion := "2.9.2",
+    scalacOptions := Seq(/*"-deprecation",*/ "-unchecked", "-optimize"), // -deprecation is too noisy due to usage of old Hadoop API, enable it once that's no longer an issue
+    unmanagedJars in Compile <<= baseDirectory map { base => (base / "lib" ** "*.jar").classpath },
+    retrieveManaged := true,
+    transitiveClassifiers in Scope.GlobalScope := Seq("sources"),
+    testListeners <<= target.map(t => Seq(new eu.henkelmann.sbt.JUnitXmlTestsListener(t.getAbsolutePath))),
+>>>>>>> FETCH_HEAD
 
   import BuildCommons._
   import scala.collection.mutable.Map
@@ -230,7 +254,34 @@ object ExludedDependencies {
  */
 object OldDeps {
 
+<<<<<<< HEAD
   lazy val project = Project("oldDeps", file("dev"), settings = oldDepsSettings)
+=======
+  def coreSettings = sharedSettings ++ Seq(
+    name := "spark-core",
+    resolvers ++= Seq(
+      "Typesafe Repository" at "http://repo.typesafe.com/typesafe/releases/",
+      "JBoss Repository" at "http://repository.jboss.org/nexus/content/repositories/releases/",
+      "Cloudera Repository" at "http://repository.cloudera.com/artifactory/cloudera-repos/"
+    ),
+    libraryDependencies ++= Seq(
+      "com.google.guava" % "guava" % "11.0.1",
+      "log4j" % "log4j" % "1.2.16",
+      "org.slf4j" % "slf4j-api" % slf4jVersion,
+      "org.slf4j" % "slf4j-log4j12" % slf4jVersion,
+      "com.ning" % "compress-lzf" % "0.8.4",
+      "org.apache.hadoop" % "hadoop-core" % HADOOP_VERSION,
+      "asm" % "asm-all" % "3.3.1",
+      "com.google.protobuf" % "protobuf-java" % "2.4.1",
+      "de.javakaffee" % "kryo-serializers" % "0.9",
+      "org.jboss.netty" % "netty" % "3.2.6.Final",
+      "it.unimi.dsi" % "fastutil" % "6.4.2",
+      "colt" % "colt" % "1.2.0",
+      "org.apache.mesos" % "mesos" % "0.9.0-incubating"
+    ) ++ (if (HADOOP_MAJOR_VERSION == "2") Some("org.apache.hadoop" % "hadoop-client" % HADOOP_VERSION) else None).toSeq,
+    unmanagedSourceDirectories in Compile <+= baseDirectory{ _ / ("src/hadoop" + HADOOP_MAJOR_VERSION + "/scala") }
+  ) ++ assemblySettings ++ extraAssemblySettings ++ Seq(test in assembly := {})
+>>>>>>> FETCH_HEAD
 
   def versionArtifact(id: String): Option[sbt.ModuleID] = {
     val fullId = id + "_2.10"
